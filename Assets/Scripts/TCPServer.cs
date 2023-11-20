@@ -21,6 +21,8 @@ public class TcpServer : MonoBehaviour
     private Thread serverThread = null;
 
     private NetworkStream stream = null;
+
+    public static Action<string> OnMessageReceivedServer;
     private void Awake()
     {
         Instance = this;
@@ -75,6 +77,7 @@ public class TcpServer : MonoBehaviour
                 if (bytesRead > 0)
                 {
                     string msgFromClient = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                    OnMessageReceivedServer?.Invoke(msgFromClient);
                     Debug.Log("Message from Client: " + msgFromClient);
                 }
             }

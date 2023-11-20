@@ -16,6 +16,7 @@ public class ChatScreen : MonoBehaviour
     void Start()
     {
         MyClient.OnMessageReceived += AddMessageFromServer;
+        TcpServer.OnMessageReceivedServer += AddMessageFromClient;
         Debug.Log("MyClient Instance: " + (MyClient.Instance != null));
         Debug.Log("Chat Display: " + (chatDisplay != null));
         // Add a listener to the button click event
@@ -24,6 +25,10 @@ public class ChatScreen : MonoBehaviour
     public void AddMessageFromServer(string message)
     {
         AddMessageToChat("Server: " + message);
+    }
+    public void AddMessageFromClient(string message)
+    {
+        AddMessageToChat("Client: " + message);
     }
     // Method to add a message to the chat display
     public void AddMessageToChat(string message)
@@ -54,11 +59,8 @@ public class ChatScreen : MonoBehaviour
     private void OnDestroy()
     {
         MyClient.OnMessageReceived -= AddMessageFromServer;
+        TcpServer.OnMessageReceivedServer -= AddMessageFromClient;
         sendButton.onClick.RemoveListener(SendMessage);
-    }
-    public void AddMessageFromClient(string message)
-    {
-        AddMessageToChat("Client: " + message);
     }
 
     void Update()
