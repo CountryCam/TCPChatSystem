@@ -43,7 +43,8 @@ public class ChatScreen : MonoBehaviour
         {
             if (!UIController.Instance.IsServer)
             {
-                MyClient.Instance.SendMessageToServer(messageToSend);
+                MyClient.Instance.SendDataClient(messageToSend);
+                //MyClient.Instance.SendData(messageToSend);
                 messageInputField.text = "";
                 UnityMainThreadDispatcher.Instance().Enqueue(() => { 
                     AddMessageToChat("You: " + messageToSend + "\n");
@@ -54,7 +55,7 @@ public class ChatScreen : MonoBehaviour
             }
             else
             {
-                TcpServer.Instance.SendData(messageToSend);
+                TcpServer.Instance.SendDataServer(messageToSend);
                 messageInputField.text = "";
                 UnityMainThreadDispatcher.Instance().Enqueue(() => {
                     AddMessageToChat("Server: " + messageToSend + "\n");

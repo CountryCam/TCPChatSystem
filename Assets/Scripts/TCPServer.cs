@@ -98,11 +98,10 @@ public class TcpServer : MonoBehaviour
         }
     }
 
-    public void SendData(string msg)
+    public void SendDataServer(string msg)
     {
         try
         {
-            //isConnected = true;
             Byte[] bytes = Encoding.ASCII.GetBytes(msg);
             stream.Write(bytes, 0, bytes.Length);
             Debug.Log("Server Sent: " + msg);

@@ -56,8 +56,12 @@ public class MyClient : MonoBehaviour
                 //isConnected = true;
                 receiverThread = new Thread(ReceiveData);
                 receiverThread.Start();
-                OnClientConected?.Invoke();
-                SendData("Hi, this is the client!");
+                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                {
+                    OnClientConected?.Invoke();
+                });
+                    //OnClientConected?.Invoke();
+                //SendDataClient("Hi, this is the client!");
                 Debug.Log("Connected to server successfully.");
             }
             else
@@ -75,28 +79,13 @@ public class MyClient : MonoBehaviour
         }
     }
 
-    public void SendData(string msg)
+    public void SendDataClient(string msg)
     {
-        if (client == null)
-        {
-            Debug.LogError("Client object is null.");
-            //isConnected = false;
-            return;
-        }
-        else if (!client.Connected)
-        {
-            Debug.LogError("Client is not connected.");
-            //isConnected = false;
-            return;
-        }
-
         try
         {
-            //isConnected = true;
             Byte[] bytes = Encoding.ASCII.GetBytes(msg);
             stream.Write(bytes, 0, bytes.Length);
             Debug.Log("Client Sent: " + msg);
-            Debug.Log("Attempting to send data. Client connected: " + (client != null && client.Connected));
 
         }
         catch (Exception e)
@@ -107,7 +96,7 @@ public class MyClient : MonoBehaviour
 
     public void SendMessageToServer(string message)
     {
-        SendData(message); 
+        SendDataClient(message); 
     }
     public void ReceiveData()
     {
