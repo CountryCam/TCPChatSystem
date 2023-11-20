@@ -1,7 +1,10 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
+//using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class TcpServer : MonoBehaviour
@@ -17,6 +20,7 @@ public class TcpServer : MonoBehaviour
     private bool isServerRunning = false;
     private Thread serverThread = null;
 
+    private NetworkStream stream = null;
     private void Awake()
     {
         Instance = this;
@@ -63,11 +67,18 @@ public class TcpServer : MonoBehaviour
 
                 TcpClient client = server.AcceptTcpClient();
                 Debug.Log("Client connected: " + client.Client.RemoteEndPoint);
-
-                // Here pass the client to another method or class 
-                Thread clientThread = new Thread(() => HandleClient(client));
-                clientThread.Start();
+                stream = client.GetStream();
+                //read message from the network stream 
+                //print
+                Byte[] bytes = new byte[1024];
+                int bytesRead = stream.Read(bytes, 0, bytes.Length);
+                if (bytesRead > 0)
+                {
+                    string msgFromClient = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                    Debug.Log("Message from Client: " + msgFromClient);
+                }
             }
+
         }
         catch (Exception ex)
         {
@@ -80,11 +91,27 @@ public class TcpServer : MonoBehaviour
         }
     }
 
+    public void SendData(string msg)
+    {
+        try
+        {
+            //isConnected = true;
+            Byte[] bytes = Encoding.ASCII.GetBytes(msg);
+            stream.Write(bytes, 0, bytes.Length);
+            Debug.Log("Server Sent: " + msg);
+
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error in sending data: " + e.Message);
+        }
+    }
+
     public void StopServer()
     {
         isServerRunning = false;
         server?.Stop();
-        serverThread?.Abort(); // Consider a more graceful approach
+        serverThread?.Abort();
         serverThread = null;
         Debug.Log("Server stopped.");
     }
@@ -94,51 +121,5 @@ public class TcpServer : MonoBehaviour
         StopServer();
     }
 
-    // Here are methods like HandleClient(TcpClient client) to manage client connections
-    private void HandleClient(TcpClient client)
-    {
-        try
-        {
- 
-            NetworkStream stream = client.GetStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-
-            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                // Decode the data received from the client
-                string messageReceived = System.Text.Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                Debug.Log("Received from client: " + messageReceived);
-
-                chatScreen.AddMessageFromClient(messageReceived);
-                // Process the message here
-                string response = ProcessClientMessage(messageReceived);
-
-                // Send a response back to the client
-                byte[] responseBytes = System.Text.Encoding.ASCII.GetBytes(response);
-                stream.Write(responseBytes, 0, responseBytes.Length);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Client handling error: " + ex.Message);
-            if (client == null)
-            {
-
-                Debug.Log("Client null");
-            }
-        }
-        finally
-        {
-            client.Close();
-        }
-    }
-
-    private string ProcessClientMessage(string message)
-    {
-        // Here the message and return a response
-        // For example, just echo the message back
-        return "Server echo: " + message;
-    }
 
 }

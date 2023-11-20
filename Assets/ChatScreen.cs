@@ -45,7 +45,7 @@ public class ChatScreen : MonoBehaviour
             }
             else
             {
-                TcpServer.Instance.SendMessage(messageToSend);
+                TcpServer.Instance.SendData(messageToSend);
                 messageInputField.text = "";
                 AddMessageToChat("Server: " + messageToSend + "\n");
             }
