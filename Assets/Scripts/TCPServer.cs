@@ -15,7 +15,7 @@ public class TcpServer : MonoBehaviour
     public int portLink;
     public string hostLink;
     public static Action OnServerCreated;
-    ChatScreen chatScreen;
+    //ChatScreen chatScreen;
 
     private bool isServerRunning = false;
     private Thread serverThread = null;
@@ -77,8 +77,12 @@ public class TcpServer : MonoBehaviour
                 if (bytesRead > 0)
                 {
                     string msgFromClient = Encoding.ASCII.GetString(bytes, 0, bytesRead);
-                    OnMessageReceivedServer?.Invoke(msgFromClient);
-                    Debug.Log("Message from Client: " + msgFromClient);
+                    UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                    {
+                        OnMessageReceivedServer?.Invoke(msgFromClient);
+                        Debug.Log("Message from Client: " + msgFromClient);
+                    });
+                    //OnMessageReceivedServer?.Invoke(msgFromClient);
                 }
             }
 

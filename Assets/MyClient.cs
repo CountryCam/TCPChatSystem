@@ -121,7 +121,11 @@ public class MyClient : MonoBehaviour
                 {
                     //string msgFromServer = Encoding.ASCII.GetString(bytes, 0, bytesRead);
                     string msgFromServer = Encoding.ASCII.GetString(bytes, 0, bytesRead);
-                    OnMessageReceived?.Invoke(msgFromServer);
+                    UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                    {
+                        OnMessageReceived?.Invoke(msgFromServer);
+                    });
+                    //OnMessageReceived?.Invoke(msgFromServer);
                     Debug.Log("Message from Server: " + msgFromServer);
 
                 }

@@ -45,14 +45,23 @@ public class ChatScreen : MonoBehaviour
             {
                 MyClient.Instance.SendMessageToServer(messageToSend);
                 messageInputField.text = "";
-                AddMessageToChat("You: " + messageToSend + "\n");
-
+                UnityMainThreadDispatcher.Instance().Enqueue(() => { 
+                    AddMessageToChat("You: " + messageToSend + "\n");
+                    Debug.Log("Added to main thread");
+                
+                });
+                
             }
             else
             {
                 TcpServer.Instance.SendData(messageToSend);
                 messageInputField.text = "";
-                AddMessageToChat("Server: " + messageToSend + "\n");
+                UnityMainThreadDispatcher.Instance().Enqueue(() => {
+                    AddMessageToChat("Server: " + messageToSend + "\n");
+                    Debug.Log("Added to main thread");
+
+                });
+                
             }
         }
     }
