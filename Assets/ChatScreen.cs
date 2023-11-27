@@ -44,6 +44,7 @@ public class ChatScreen : MonoBehaviour
             if (!UIController.Instance.IsServer)
             {
                 MyClient.Instance.SendDataClient(messageToSend);
+                MyClient.Instance.SendMessageToServer(messageToSend);
                 //MyClient.Instance.SendData(messageToSend);
                 messageInputField.text = "";
                 UnityMainThreadDispatcher.Instance().Enqueue(() => { 

@@ -126,8 +126,9 @@ public class MyClient : MonoBehaviour
         }
         finally
         {
+            
             //isConnected = false;
-            // Perform any necessary cleanup
+            
         }
     }
 
