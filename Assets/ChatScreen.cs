@@ -7,18 +7,22 @@ using TMPro; // If using TextMeshPro
 public class ChatScreen : MonoBehaviour
 {
     // Public field to assign your Text component in the editor
-    public TMP_Text chatDisplay;
+
+    public TMP_Text messagePrefab;
+    public Transform messageContainer;
+    //public TMP_Text chatDisplay;
     public TMP_InputField messageInputField; // Assign in editor
     public Button sendButton; // Assign in editor
     //public TcpClient client;
     //public TcpServer server;
+    public ScrollRect scrollRect;
 
     void Start()
     {
         MyClient.OnMessageReceived += AddMessageFromServer;
         TcpServer.OnMessageReceivedServer += AddMessageFromClient;
         Debug.Log("MyClient Instance: " + (MyClient.Instance != null));
-        Debug.Log("Chat Display: " + (chatDisplay != null));
+        //Debug.Log("Chat Display: " + (chatDisplay != null));
         // Add a listener to the button click event
         sendButton.onClick.AddListener(SendMessage);
     }
@@ -33,7 +37,11 @@ public class ChatScreen : MonoBehaviour
     // Method to add a message to the chat display
     public void AddMessageToChat(string message)
     {
-        chatDisplay.text += message + "\n";
+        TMP_Text newMessage = Instantiate(messagePrefab, messageContainer);
+        newMessage.text = message;
+        Canvas.ForceUpdateCanvases(); // Update the canvas immediately
+        scrollRect.verticalNormalizedPosition = 0; // Scroll to bottom
+        //chatDisplay.text += message + "\n";
     }
 
     public void SendMessage()
@@ -41,32 +49,27 @@ public class ChatScreen : MonoBehaviour
         string messageToSend = messageInputField.text;
         if (!string.IsNullOrWhiteSpace(messageToSend))
         {
+            // Send the message through the client or the server
             if (!UIController.Instance.IsServer)
             {
-                MyClient.Instance.SendDataClient(messageToSend);
                 MyClient.Instance.SendMessageToServer(messageToSend);
-                //MyClient.Instance.SendData(messageToSend);
-                messageInputField.text = "";
-                UnityMainThreadDispatcher.Instance().Enqueue(() => { 
-                    AddMessageToChat("You: " + messageToSend + "\n");
-                    Debug.Log("Added to main thread");
-                
-                });
-                
             }
             else
             {
                 TcpServer.Instance.SendDataServer(messageToSend);
-                messageInputField.text = "";
-                UnityMainThreadDispatcher.Instance().Enqueue(() => {
-                    AddMessageToChat("Server: " + messageToSend + "\n");
-                    Debug.Log("Added to main thread");
-
-                });
-                
             }
+
+            // Clear the input field
+            messageInputField.text = "";
+
+            // Add message to chat display
+            UnityMainThreadDispatcher.Instance().Enqueue(() => {
+                string prefix = UIController.Instance.IsServer ? "Server: " : "You: ";
+                AddMessageToChat(prefix + messageToSend);
+            });
         }
     }
+
     private void OnDestroy()
     {
         MyClient.OnMessageReceived -= AddMessageFromServer;

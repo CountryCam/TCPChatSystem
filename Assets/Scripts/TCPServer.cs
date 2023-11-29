@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -19,7 +19,7 @@ public class TcpServer : MonoBehaviour
 
     private bool isServerRunning = false;
     private Thread serverThread = null;
-
+    private List<TcpClient> clients = new List<TcpClient>();
     private NetworkStream stream = null;
 
     public static Action<string> OnMessageReceivedServer;
@@ -68,8 +68,13 @@ public class TcpServer : MonoBehaviour
                 }
 
                 TcpClient client = server.AcceptTcpClient();
+                clients.Add(client);
                 Debug.Log("Client connected: " + client.Client.RemoteEndPoint);
                 stream = client.GetStream();
+
+                Thread clientThread = new Thread(() => HandleClient(client));
+                clientThread.Start();
+                
                 //read message from the network stream 
                 //print
                 Byte[] bytes = new byte[1024];
@@ -98,12 +103,56 @@ public class TcpServer : MonoBehaviour
         }
     }
 
+    private void HandleClient(TcpClient client)
+    {
+        try
+        {
+            NetworkStream stream = client.GetStream();
+            byte[] buffer = new byte[1024];
+            while (client.Connected)
+            {
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                if (bytesRead > 0)
+                {
+                    string msgFromClient = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                    UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                    {
+                        OnMessageReceivedServer?.Invoke(msgFromClient);
+                        Debug.Log("Message from Client: " + msgFromClient);
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error handling client: " + ex.Message);
+        }
+        finally
+        {
+            // Close the client connection and remove it from the list
+            stream.Close();
+            client.Close();
+            clients.Remove(client);
+        }
+    }
+
     public void SendDataServer(string msg)
     {
         try
         {
             Byte[] bytes = Encoding.ASCII.GetBytes(msg);
-            stream.Write(bytes, 0, bytes.Length);
+            foreach (TcpClient client in clients) 
+            {
+                if (client.Connected)
+                {
+                    NetworkStream stream = client.GetStream();
+                    if (stream.CanWrite)
+                    {
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                }
+            }
+            
             Debug.Log("Server Sent: " + msg);
 
         }
