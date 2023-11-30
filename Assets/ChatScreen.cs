@@ -16,6 +16,9 @@ public class ChatScreen : MonoBehaviour
     //public TcpClient client;
     //public TcpServer server;
     public ScrollRect scrollRect;
+    string userName;
+    
+
 
     void Start()
     {
@@ -25,14 +28,15 @@ public class ChatScreen : MonoBehaviour
         //Debug.Log("Chat Display: " + (chatDisplay != null));
         // Add a listener to the button click event
         sendButton.onClick.AddListener(SendMessage);
+        userName = LoginScreen.Instance.Name.text;
     }
-    public void AddMessageFromServer(string message)
+    public void AddMessageFromServer(string message,string userName)
     {
-        AddMessageToChat("Server: " + message);
+        AddMessageToChat(userName + message);
     }
-    public void AddMessageFromClient(string message)
+    public void AddMessageFromClient(string message, string userName)
     {
-        AddMessageToChat("Client: " + message);
+        AddMessageToChat(userName + message);
     }
     // Method to add a message to the chat display
     public void AddMessageToChat(string message)
@@ -61,10 +65,10 @@ public class ChatScreen : MonoBehaviour
 
             // Clear the input field
             messageInputField.text = "";
-
+            string senderName = userName + ": ";
             // Add message to chat display
             UnityMainThreadDispatcher.Instance().Enqueue(() => {
-                string prefix = UIController.Instance.IsServer ? "Server: " : "You: ";
+                string prefix = UIController.Instance.IsServer ? senderName : senderName;
                 AddMessageToChat(prefix + messageToSend);
             });
         }

@@ -22,10 +22,13 @@ public class TcpServer : MonoBehaviour
     private List<TcpClient> clients = new List<TcpClient>();
     private NetworkStream stream = null;
 
-    public static Action<string> OnMessageReceivedServer;
+    public static Action<string, string> OnMessageReceivedServer;
+    string userName;
+    
     private void Awake()
     {
         Instance = this;
+        string userName = LoginScreen.Instance.Name.text;
     }
 
     public void CreateServer(string ipAddress, int port)
@@ -82,9 +85,10 @@ public class TcpServer : MonoBehaviour
                 if (bytesRead > 0)
                 {
                     string msgFromClient = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                    string senderName = userName;
                     UnityMainThreadDispatcher.Instance().Enqueue(() =>
                     {
-                        OnMessageReceivedServer?.Invoke(msgFromClient);
+                        OnMessageReceivedServer?.Invoke(msgFromClient, senderName);
                         Debug.Log("Message from Client: " + msgFromClient);
                     });
                     //OnMessageReceivedServer?.Invoke(msgFromClient);
@@ -115,9 +119,10 @@ public class TcpServer : MonoBehaviour
                 if (bytesRead > 0)
                 {
                     string msgFromClient = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                    string senderName = userName;
                     UnityMainThreadDispatcher.Instance().Enqueue(() =>
                     {
-                        OnMessageReceivedServer?.Invoke(msgFromClient);
+                        OnMessageReceivedServer?.Invoke(msgFromClient, senderName);
                         Debug.Log("Message from Client: " + msgFromClient);
                     });
                 }

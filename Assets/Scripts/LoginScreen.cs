@@ -7,14 +7,21 @@ using UnityEngine.UI;
 
 public class LoginScreen : MonoBehaviour
 {
+    public static LoginScreen Instance;
+
     public TMP_InputField IPAddress;
     public TMP_InputField Port;
+    public TMP_InputField Name;
     public Button ServerButton;
     public Button ClientButton;
 
 
     public static Action onServerConnected;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         ServerButton.onClick.AddListener(ServerButtonClicked);

@@ -21,12 +21,14 @@ public class MyClient : MonoBehaviour
     //private bool isConnected = false;
 
     public static Action OnClientConected;
-    public static Action<string> OnMessageReceived;
+    public static Action<string, string> OnMessageReceived;
 
-
+    string userName;
+    
 
     private void Awake()
     {
+        
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -34,6 +36,7 @@ public class MyClient : MonoBehaviour
         }
 
         Instance = this;
+        string userName = LoginScreen.Instance.Name.text;
         DontDestroyOnLoad(gameObject);
     }
 
@@ -110,9 +113,10 @@ public class MyClient : MonoBehaviour
                 {
                     //string msgFromServer = Encoding.ASCII.GetString(bytes, 0, bytesRead);
                     string msgFromServer = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                    string senderName = userName;
                     UnityMainThreadDispatcher.Instance().Enqueue(() =>
                     {
-                        OnMessageReceived?.Invoke(msgFromServer);
+                        OnMessageReceived?.Invoke(msgFromServer, senderName);
                     });
                     //OnMessageReceived?.Invoke(msgFromServer);
                     Debug.Log("Message from Server: " + msgFromServer);
