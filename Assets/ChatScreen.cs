@@ -54,21 +54,21 @@ public class ChatScreen : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(messageToSend))
         {
             // Send the message through the client or the server
+            string senderName = userName + "";
             if (!UIController.Instance.IsServer)
             {
-                MyClient.Instance.SendMessageToServer(messageToSend);
+                MyClient.Instance.SendMessageToServer(senderName+":"+messageToSend);
             }
             else
             {
-                TcpServer.Instance.SendDataServer(messageToSend);
+                TcpServer.Instance.SendDataServer(senderName+":"+messageToSend);
             }
 
             // Clear the input field
             messageInputField.text = "";
-            string senderName = userName + ": ";
             // Add message to chat display
             UnityMainThreadDispatcher.Instance().Enqueue(() => {
-                string prefix = UIController.Instance.IsServer ? senderName : senderName;
+                string prefix = UIController.Instance.IsServer ? senderName + ":" : senderName + ":";
                 AddMessageToChat(prefix + messageToSend);
             });
         }
